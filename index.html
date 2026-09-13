@@ -139,7 +139,7 @@ const linkStyle = {
 /* ============================================================
    STEP 6: CREATE THE GRAPH
    ============================================================ */
-const Graph = ForceGraph3D()(document.getElementById('graph'))
+const Graph = ForceGraph3D(document.getElementById('graph'))
   .graphData(data)
   .backgroundColor('#0b0b12')
 
