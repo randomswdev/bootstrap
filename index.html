@@ -150,13 +150,13 @@ const Graph = ForceGraph3D()(document.getElementById('graph'))
   .nodeOpacity(0.95)
 
   // --- link (relation) appearance, driven by type ---
-  //.linkColor(link => linkStyle[link.type]?.color || '#999')
-  //.linkWidth(link => linkStyle[link.type]?.width || 1)
-  //.linkDirectionalArrowLength(link => linkStyle[link.type]?.arrow || 0)
-  //.linkDirectionalArrowRelPos(1)                        // arrow sits at target end
-  //.linkDirectionalParticles(link => linkStyle[link.type]?.particles || 0)
-  //.linkDirectionalParticleWidth(2)
-  //.linkOpacity(0.8)
+  .linkColor(link => linkStyle[link.type]?.color || '#999')
+  .linkWidth(link => linkStyle[link.type]?.width || 1)
+  .linkDirectionalArrowLength(link => linkStyle[link.type]?.arrow || 0)
+  .linkDirectionalArrowRelPos(1)                        // arrow sits at target end
+  .linkDirectionalParticles(link => linkStyle[link.type]?.particles || 0)
+  .linkDirectionalParticleWidth(2)
+  .linkOpacity(0.8)
 
   // --- clustering physics from Step 4 ---
   //.d3Force('link', Graph => Graph); // placeholder no-op, replaced below
