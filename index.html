@@ -159,7 +159,7 @@ const Graph = ForceGraph3D()(document.getElementById('graph'))
   .linkOpacity(0.8)
 
   // --- clustering physics from Step 4 ---
-  //.d3Force('link', Graph => Graph); // placeholder no-op, replaced below
+  .d3Force('link', Graph => Graph); // placeholder no-op, replaced below
 
 // Custom-tune the link force's distance function (must be done after init,
 // via the underlying d3-force-3d engine that 3d-force-graph wraps):
