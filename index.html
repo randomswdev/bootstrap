@@ -144,8 +144,8 @@ const Graph = ForceGraph3D()(document.getElementById('graph'))
   .backgroundColor('#0b0b12')
 
   // --- node appearance ---
-  //.nodeLabel(node => `${node.id} (${node.group})`)   // tooltip on hover
-  //.nodeColor(node => groupColors[node.group] || '#ccc')
+  .nodeLabel(node => `${node.id} (${node.group})`)   // tooltip on hover
+  .nodeColor(node => groupColors[node.group] || '#ccc')
   .nodeVal(4)                                          // node sphere size
   .nodeOpacity(0.95)
 
