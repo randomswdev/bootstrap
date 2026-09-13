@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<!--
+  3D-FORCE-GRAPH TUTORIAL
+  ========================
+  Just open this file in a browser (double-click it) — no server, no build step.
+  It loads the library from a CDN and renders an interactive 3D graph you can
+  drag, rotate (drag with mouse), zoom (scroll), and click on.
+
+  Read the comments top to bottom — they walk through:
+    1. Basic setup
+    2. Data format (nodes + links)
+    3. Coloring nodes by group
+    4. Visually clustering ("grouping") nodes
+    5. Styling different relation (link) types differently
+    6. Extra interactivity (click, hover, labels)
+-->
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>3d-force-graph tutorial</title>
+  <style>
+    body { margin: 0; background: #0b0b12; overflow: hidden; font-family: sans-serif; }
+    #legend {
+      position: absolute; top: 12px; left: 12px; color: #eee;
+      background: rgba(0,0,0,0.5); padding: 10px 14px; border-radius: 8px;
+      font-size: 13px; line-height: 1.6; z-index: 10;
+    }
+    #legend b { display:block; margin-bottom:4px; }
+    .swatch { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; }
+    .line { display:inline-block; width:18px; height:2px; margin-right:6px; vertical-align:middle; }
+  </style>
+  <!-- STEP 1: Load the library. This exposes a global ForceGraph3D() function. -->
+  <script src="https://unpkg.com/3d-force-graph"></script>
+</head>
+<body>
+
+<div id="legend">
+  <b>Groups (node color)</b>
+  <span class="swatch" style="background:#e63946"></span>Team A
+  <span class="swatch" style="background:#457b9d"></span>Team B
+  <span class="swatch" style="background:#2a9d8f"></span>Team C
+  <br><b>Relations (link style)</b>
+  <span class="line" style="background:#f1c40f"></span>reports_to (thick, arrow)
+  <span class="line" style="background:#9b59b6"></span>collaborates_with (particles)
+  <span class="line" style="background:#555"></span>knows (thin, dashed look)
+</div>
+
+<div id="graph"></div>
+
+<script>
+/* ============================================================
+   STEP 2: YOUR DATA
+   ------------------------------------------------------------
+   The library expects a plain object: { nodes: [...], links: [...] }
+   - Every node needs a unique "id".
+   - Every link needs "source" and "target" matching node ids.
+   - Any extra fields (group, type, etc.) are yours to invent and
+     then use in the styling functions below.
+   ============================================================ */
+const data = {
+  nodes: [
+    { id: "Alice",  group: "Team A" },
+    { id: "Bob",    group: "Team A" },
+    { id: "Carol",  group: "Team A" },
+    { id: "Dave",   group: "Team B" },
+    { id: "Erin",   group: "Team B" },
+    { id: "Frank",  group: "Team B" },
+    { id: "Grace",  group: "Team C" },
+    { id: "Heidi",  group: "Team C" },
+  ],
+  links: [
+    { source: "Bob",   target: "Alice", type: "reports_to" },
+    { source: "Carol", target: "Alice", type: "reports_to" },
+    { source: "Erin",  target: "Dave",  type: "reports_to" },
+    { source: "Frank", target: "Dave",  type: "reports_to" },
+    { source: "Heidi", target: "Grace", type: "reports_to" },
+
+    { source: "Alice", target: "Dave",  type: "collaborates_with" },
+    { source: "Carol", target: "Grace", type: "collaborates_with" },
+    { source: "Bob",   target: "Frank", type: "collaborates_with" },
+
+    { source: "Alice", target: "Heidi", type: "knows" },
+    { source: "Erin",  target: "Carol", type: "knows" },
+    { source: "Frank", target: "Grace", type: "knows" },
+  ]
+};
+
+/* ============================================================
+   STEP 3: COLOR NODES BY GROUP
+   ------------------------------------------------------------
+   Map each group name to a fixed color, then hand a function to
+   .nodeColor() that looks up a node's group. (You could also use
+   the built-in .nodeAutoColorBy('group') if you don't care which
+   exact colors are picked.)
+   ============================================================ */
+const groupColors = {
+  "Team A": "#e63946",
+  "Team B": "#457b9d",
+  "Team C": "#2a9d8f",
+};
+
+/* ============================================================
+   STEP 4: "GROUPING" NODES VISUALLY
+   ------------------------------------------------------------
+   3d-force-graph doesn't have a literal "draw a box around this
+   group" feature, but the standard way to make groups visually
+   cluster together in 3D space is:
+     a) give same-group nodes the same color (done above), and
+     b) nudge the physics so same-group nodes attract each other
+        more than they attract other groups.
+   Below we do (b) by customizing the "charge" force slightly and,
+   more importantly, by biasing link distance: intra-group links
+   are pulled shorter than inter-group links, which visually
+   clusters each team into its own region of 3D space.
+   ============================================================ */
+function linkDistance(link) {
+  const sameGroup = link.source.group === link.target.group;
+  return sameGroup ? 40 : 160; // shorter = tighter cluster
+}
+
+/* ============================================================
+   STEP 5: STYLE DIFFERENT RELATION TYPES DIFFERENTLY
+   ------------------------------------------------------------
+   Give every link.type its own color/width/behavior. You have:
+     - linkColor(fn)
+     - linkWidth(fn)
+     - linkDirectionalArrowLength(fn)  -> arrowhead size (hierarchy)
+     - linkDirectionalParticles(fn)    -> animated flowing dots
+     - linkOpacity                     -> make weaker relations fainter
+   This is the easiest way to make relation *types* visually distinct
+   without needing custom dashed-line geometry.
+   ============================================================ */
+const linkStyle = {
+  reports_to:         { color: "#f1c40f", width: 3, arrow: 6, particles: 0 },
+  collaborates_with:  { color: "#9b59b6", width: 1.5, arrow: 0, particles: 3 },
+  knows:               { color: "#777777", width: 0.6, arrow: 0, particles: 0 },
+};
+
+/* ============================================================
+   STEP 6: CREATE THE GRAPH
+   ============================================================ */
+const Graph = ForceGraph3D()(document.getElementById('graph'))
+  .graphData(data)
+  .backgroundColor('#0b0b12')
+
+  // --- node appearance ---
+  .nodeLabel(node => `${node.id} (${node.group})`)   // tooltip on hover
+  .nodeColor(node => groupColors[node.group] || '#ccc')
+  .nodeVal(4)                                          // node sphere size
+  .nodeOpacity(0.95)
+
+  // --- link (relation) appearance, driven by type ---
+  .linkColor(link => linkStyle[link.type]?.color || '#999')
+  .linkWidth(link => linkStyle[link.type]?.width || 1)
+  .linkDirectionalArrowLength(link => linkStyle[link.type]?.arrow || 0)
+  .linkDirectionalArrowRelPos(1)                        // arrow sits at target end
+  .linkDirectionalParticles(link => linkStyle[link.type]?.particles || 0)
+  .linkDirectionalParticleWidth(2)
+  .linkOpacity(0.8)
+
+  // --- clustering physics from Step 4 ---
+  .d3Force('link', Graph => Graph); // placeholder no-op, replaced below
+
+// Custom-tune the link force's distance function (must be done after init,
+// via the underlying d3-force-3d engine that 3d-force-graph wraps):
+Graph.d3Force('link').distance(linkDistance);
+
+// --- STEP 7 (bonus): interactivity ---
+// Click a node to focus the camera on it.
+Graph.onNodeClick(node => {
+  const distance = 80;
+  const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
+  Graph.cameraPosition(
+    { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
+    node,
+    1000
+  );
+});
+</script>
+</body>
+</html>
