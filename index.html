@@ -139,35 +139,35 @@ const linkStyle = {
 /* ============================================================
    STEP 6: CREATE THE GRAPH
    ============================================================ */
-const Graph = ForceGraph3D(document.getElementById('graph'))
+const Graph = ForceGraph3D()(document.getElementById('graph'))
   .graphData(data)
   .backgroundColor('#0b0b12')
 
   // --- node appearance ---
-  .nodeLabel(node => `${node.id} (${node.group})`)   // tooltip on hover
-  .nodeColor(node => groupColors[node.group] || '#ccc')
+  //.nodeLabel(node => `${node.id} (${node.group})`)   // tooltip on hover
+  //.nodeColor(node => groupColors[node.group] || '#ccc')
   .nodeVal(4)                                          // node sphere size
   .nodeOpacity(0.95)
 
   // --- link (relation) appearance, driven by type ---
-  .linkColor(link => linkStyle[link.type]?.color || '#999')
-  .linkWidth(link => linkStyle[link.type]?.width || 1)
-  .linkDirectionalArrowLength(link => linkStyle[link.type]?.arrow || 0)
-  .linkDirectionalArrowRelPos(1)                        // arrow sits at target end
-  .linkDirectionalParticles(link => linkStyle[link.type]?.particles || 0)
-  .linkDirectionalParticleWidth(2)
-  .linkOpacity(0.8)
+  //.linkColor(link => linkStyle[link.type]?.color || '#999')
+  //.linkWidth(link => linkStyle[link.type]?.width || 1)
+  //.linkDirectionalArrowLength(link => linkStyle[link.type]?.arrow || 0)
+  //.linkDirectionalArrowRelPos(1)                        // arrow sits at target end
+  //.linkDirectionalParticles(link => linkStyle[link.type]?.particles || 0)
+  //.linkDirectionalParticleWidth(2)
+  //.linkOpacity(0.8)
 
   // --- clustering physics from Step 4 ---
-  .d3Force('link', Graph => Graph); // placeholder no-op, replaced below
+  //.d3Force('link', Graph => Graph); // placeholder no-op, replaced below
 
 // Custom-tune the link force's distance function (must be done after init,
 // via the underlying d3-force-3d engine that 3d-force-graph wraps):
-// Graph.d3Force('link').distance(linkDistance);
+//Graph.d3Force('link').distance(linkDistance);
 
 // --- STEP 7 (bonus): interactivity ---
 // Click a node to focus the camera on it.
-Graph.onNodeClick(node => {
+/*Graph.onNodeClick(node => {
   const distance = 80;
   const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
   Graph.cameraPosition(
@@ -175,7 +175,7 @@ Graph.onNodeClick(node => {
     node,
     1000
   );
-});
+});*/
 </script>
 </body>
 </html>
